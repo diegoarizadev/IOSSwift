@@ -51,8 +51,6 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
     navigationItem.searchController = searchController// agrega la barra de búsqueda al elemento de navegación.
     definesPresentationContext = true //se asegura de que la barra de búsqueda no permanezca en la pantalla si el usuario navega a otro controlador de vista mientras el UISearchController está activo.
     
-    
-
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -72,7 +70,14 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
         return
     }
     
-    let candy = candies[indexPath.row]
+    //corrige el error para mostar el detalle correcto, según el dulce buscado
+    let candy: Candy
+    if isFiltering {
+      candy = filteredCandies[indexPath.row]
+    } else {
+      candy = candies[indexPath.row]
+    }
+
     detailViewController.candy = candy
   }
   
