@@ -98,23 +98,42 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
     let searchBar = searchController.searchBar
     filterContentForSearchText(searchBar.text!)
   }
+  
+  
+  //Evalua si esta el usuario esta buscando algo.
+  var isFiltering: Bool {
+    return searchController.isActive && !isSearchBarEmpty
+  }
+
 }
 
 extension MasterViewController: UITableViewDataSource {
+  
+  //Se verifica si el usuario esta realizando una busqueda.
   func tableView(_ tableView: UITableView,
                  numberOfRowsInSection section: Int) -> Int {
+    if isFiltering {
+      return filteredCandies.count
+    }
+      
     return candies.count
   }
+
   
   func tableView(_ tableView: UITableView,
                  cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell",
-                                             for: indexPath)
-    let candy = candies[indexPath.row]
+    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+    let candy: Candy
+    if isFiltering { //determinan que arreglo mostrar.
+      candy = filteredCandies[indexPath.row] //datos retornados en la busqueda o criterio qu eingreso el usuario.
+    } else {
+      candy = candies[indexPath.row]
+    }
     cell.textLabel?.text = candy.name
     cell.detailTextLabel?.text = candy.category.rawValue
     return cell
   }
+
 }
 
 let searchController = UISearchController(searchResultsController: nil)//método para cumplir con el protocolo UISearchResultsUpdating
