@@ -28,7 +28,9 @@
 
 import UIKit
 
-class MasterViewController: UIViewController {
+class MasterViewController: UIViewController, UISearchResultsUpdating {
+
+  
 
   @IBOutlet var tableView: UITableView!
   @IBOutlet var searchFooter: SearchFooter!
@@ -36,6 +38,8 @@ class MasterViewController: UIViewController {
   
   var candies: [Candy] = []
   let searchController = UISearchController(searchResultsController: nil) //Se especifica al controlador que va a utilizar la misma vista para mostrar los resultados.
+  var filteredCandies: [Candy] = [] //contendra los caramelos que busca el usuario.
+
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -70,6 +74,29 @@ class MasterViewController: UIViewController {
     
     let candy = candies[indexPath.row]
     detailViewController.candy = candy
+  }
+  
+  //retorna verdadero si el texto escrito en la barra esta vacio.
+  var isSearchBarEmpty: Bool {
+    return searchController.searchBar.text?.isEmpty ?? true
+  }
+  
+  
+  //filtra los caramelos en base al texto escrito por el usuario.
+  func filterContentForSearchText(_ searchText: String,
+                                  category: Candy.Category? = nil) {
+    filteredCandies = candies.filter { (candy: Candy) -> Bool in
+      return candy.name.lowercased().contains(searchText.lowercased())//Retorna Verdadero o falso para agregar el dulce al arreglo de resultados, se convierten las cadenas de texto en minusculas.
+    }
+    
+    tableView.reloadData()//recarga la tabla
+  }
+
+
+  //Ahora, cada vez que el usuario agrega o elimina texto en la barra de búsqueda, UISearchController informará a la clase MasterViewController del cambio a través de una llamada a for searchController, que a su vez llama a filterContentForSearchText
+  func updateSearchResults(for searchController: UISearchController) {
+    let searchBar = searchController.searchBar
+    filterContentForSearchText(searchBar.text!)
   }
 }
 
