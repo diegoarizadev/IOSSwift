@@ -29,14 +29,26 @@
 import UIKit
 
 class MasterViewController: UIViewController {
+
   @IBOutlet var tableView: UITableView!
   @IBOutlet var searchFooter: SearchFooter!
   @IBOutlet var searchFooterBottomConstraint: NSLayoutConstraint!
   
   var candies: [Candy] = []
+  let searchController = UISearchController(searchResultsController: nil) //Se especifica al controlador que va a utilizar la misma vista para mostrar los resultados.
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    candies =  Candy.candies() //Se inicializa la tabla maestra con objetos.
+
+    searchController.searchResultsUpdater = self //Informa a la clase de cualquier cambio el componente UISearchBar
+    searchController.obscuresBackgroundDuringPresentation = false //UISearchController oculta el controlador de vista que contiene la información que está buscando. Esto es útil si está utilizando otro controlador de vista para su searchResultsController. En este caso, configuró la vista actual para mostrar los resultados, por lo que no desea ocultar su vista.
+    searchController.searchBar.placeholder = "Search Candies" //Placeholder del componente UISearchBar
+    navigationItem.searchController = searchController// agrega la barra de búsqueda al elemento de navegación.
+    definesPresentationContext = true //se asegura de que la barra de búsqueda no permanezca en la pantalla si el usuario navega a otro controlador de vista mientras el UISearchController está activo.
+    
+    
+
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -77,3 +89,6 @@ extension MasterViewController: UITableViewDataSource {
     return cell
   }
 }
+
+let searchController = UISearchController(searchResultsController: nil)//método para cumplir con el protocolo UISearchResultsUpdating
+

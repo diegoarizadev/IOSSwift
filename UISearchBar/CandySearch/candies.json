@@ -1,5 +1,6 @@
 [
   { "name": "Chocolate Bar", "category": "Chocolate" },
+  { "name": "Chocolate", "category": "Chocolate" },
   { "name": "Chocolate Chip", "category": "Chocolate" },
   { "name": "Dark Chocolate", "category": "Chocolate" },
   { "name": "Chocolate Coin", "category": "Chocolate" },
