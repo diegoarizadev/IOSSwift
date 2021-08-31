@@ -51,6 +51,11 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
     navigationItem.searchController = searchController// agrega la barra de búsqueda al elemento de navegación.
     definesPresentationContext = true //se asegura de que la barra de búsqueda no permanezca en la pantalla si el usuario navega a otro controlador de vista mientras el UISearchController está activo.
     
+    searchController.searchBar.scopeButtonTitles = Candy.Category.allCases
+      .map { $0.rawValue }
+    searchController.searchBar.delegate = self
+
+    
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -91,7 +96,14 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
   func filterContentForSearchText(_ searchText: String,
                                   category: Candy.Category? = nil) {
     filteredCandies = candies.filter { (candy: Candy) -> Bool in
-      return candy.name.lowercased().contains(searchText.lowercased())//Retorna Verdadero o falso para agregar el dulce al arreglo de resultados, se convierten las cadenas de texto en minusculas.
+      let doesCategoryMatch = category == .all || candy.category == category
+      //return candy.name.lowercased().contains(searchText.lowercased())//Retorna Verdadero o falso para agregar el dulce al arreglo de resultados, se convierten las cadenas de texto en minusculas.
+      if isSearchBarEmpty {
+        return doesCategoryMatch
+      } else {
+        return doesCategoryMatch && candy.name.lowercased()
+          .contains(searchText.lowercased())
+      }
     }
     
     tableView.reloadData()//recarga la tabla
@@ -101,13 +113,19 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
   //Ahora, cada vez que el usuario agrega o elimina texto en la barra de búsqueda, UISearchController informará a la clase MasterViewController del cambio a través de una llamada a for searchController, que a su vez llama a filterContentForSearchText
   func updateSearchResults(for searchController: UISearchController) {
     let searchBar = searchController.searchBar
-    filterContentForSearchText(searchBar.text!)
+    let category = Candy.Category(rawValue:
+      searchBar.scopeButtonTitles![searchBar.selectedScopeButtonIndex])
+    filterContentForSearchText(searchBar.text!, category: category)
   }
+
   
   
   //Evalua si esta el usuario esta buscando algo.
   var isFiltering: Bool {
-    return searchController.isActive && !isSearchBarEmpty
+    let searchBarScopeIsFiltering = //verifica si la categoría del caramelo coincide con la categoría que pasa en el UIsearchBar
+      searchController.searchBar.selectedScopeButtonIndex != 0
+    return searchController.isActive &&
+      (!isSearchBarEmpty || searchBarScopeIsFiltering)
   }
 
 }
@@ -141,5 +159,16 @@ extension MasterViewController: UITableViewDataSource {
 
 }
 
-let searchController = UISearchController(searchResultsController: nil)//método para cumplir con el protocolo UISearchResultsUpdating
+
+//Se agrega una extensión para realizar la busqueda por la categoria.
+extension MasterViewController: UISearchBarDelegate {
+  func searchBar(_ searchBar: UISearchBar,
+      selectedScopeButtonIndexDidChange selectedScope: Int) {
+    let category = Candy.Category(rawValue:
+      searchBar.scopeButtonTitles![selectedScope])
+    filterContentForSearchText(searchBar.text!, category: category)
+  }
+}
+
+
 
