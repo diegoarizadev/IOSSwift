@@ -54,6 +54,22 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
     searchController.searchBar.scopeButtonTitles = Candy.Category.allCases
       .map { $0.rawValue }
     searchController.searchBar.delegate = self
+    
+    
+    
+    //Observador para controlar el indicador de resultados de busquedas, se ajustara dependiendo de la posicion del teaclado.
+    let notificationCenter = NotificationCenter.default
+    notificationCenter.addObserver(
+      forName: UIResponder.keyboardWillChangeFrameNotification,
+      object: nil, queue: .main) { (notification) in
+        self.handleKeyboard(notification: notification)
+    }
+    notificationCenter.addObserver(
+      forName: UIResponder.keyboardWillHideNotification,
+      object: nil, queue: .main) { (notification) in
+        self.handleKeyboard(notification: notification)
+    }
+
 
     
   }
@@ -127,6 +143,31 @@ class MasterViewController: UIViewController, UISearchResultsUpdating {
     return searchController.isActive &&
       (!isSearchBarEmpty || searchBarScopeIsFiltering)
   }
+  
+  
+  func handleKeyboard(notification: Notification) {
+    //Verifica si la notificación se debe mostrar por encima del teclado
+    guard notification.name == UIResponder.keyboardWillChangeFrameNotification else {
+      searchFooterBottomConstraint.constant = 0
+      view.layoutIfNeeded()
+      return
+    }
+
+    guard
+      let info = notification.userInfo,
+      let keyboardFrame = info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue
+      else {
+        return
+    }
+
+    //Si la notificación identifica el rectángulo del marco final del teclado, mueva el pie de página de búsqueda justo encima del teclado.
+    let keyboardHeight = keyboardFrame.cgRectValue.size.height
+    UIView.animate(withDuration: 0.1, animations: { () -> Void in
+      self.searchFooterBottomConstraint.constant = keyboardHeight
+      self.view.layoutIfNeeded()
+    })
+  }
+
 
 }
 
@@ -136,9 +177,13 @@ extension MasterViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView,
                  numberOfRowsInSection section: Int) -> Int {
     if isFiltering {
+      //Actualiza la cantidad de resultados
+      searchFooter.setIsFilteringToShow(filteredItemCount:
+            filteredCandies.count, of: candies.count)
       return filteredCandies.count
     }
-      
+    //Actualiza la cantidad de resultados
+    searchFooter.setNotFiltering()
     return candies.count
   }
 
